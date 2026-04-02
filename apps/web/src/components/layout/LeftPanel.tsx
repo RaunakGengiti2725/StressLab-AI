@@ -1,20 +1,37 @@
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Folder, Box, Layers, FlaskConical, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  Box,
+  Layers,
+  FlaskConical,
+  X,
+  Check,
+} from "lucide-react";
+
+import { useMaterialStore } from "@/stores/useMaterialStore";
+import { useModelStore } from "@/stores/useModelStore";
+import { useScenarioStore } from "@/stores/useScenarioStore";
+import { ScenarioList } from "@/components/scenarios/ScenarioList";
 
 type Tab = "project" | "materials" | "scenarios";
-
-const materials = [
-  { id: "pla", name: "PLA", color: "#22d3ee" },
-  { id: "petg", name: "PETG", color: "#a78bfa" },
-  { id: "abs", name: "ABS", color: "#fb923c" },
-  { id: "nylon", name: "Nylon", color: "#4ade80" },
-  { id: "tpu", name: "TPU", color: "#f472b6" },
-  { id: "resin", name: "Resin", color: "#facc15" },
-];
 
 export function LeftPanel({ onCollapse }: { onCollapse: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>("project");
   const [treeOpen, setTreeOpen] = useState(true);
+
+  const loadFromStorage = useScenarioStore((s) => s.loadFromStorage);
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
+
+  const materials = useMaterialStore((s) => s.materials);
+  const selectedId = useMaterialStore((s) => s.selectedId);
+  const setSelectedId = useMaterialStore((s) => s.setSelectedId);
+
+  const modelLoaded = useModelStore((s) => s.loaded);
+  const modelName = useModelStore((s) => s.name);
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "project", label: "Project", icon: <Folder size={14} /> },
@@ -56,20 +73,27 @@ export function LeftPanel({ onCollapse }: { onCollapse: () => void }) {
               onClick={() => setTreeOpen((v) => !v)}
               className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-xs text-zinc-300 hover:bg-surface-3"
             >
-              {treeOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+              {treeOpen ? (
+                <ChevronDown size={12} />
+              ) : (
+                <ChevronRight size={12} />
+              )}
               <Folder size={12} className="text-accent" />
               My Project
             </button>
             {treeOpen && (
               <div className="ml-4 mt-1 space-y-0.5">
-                <div className="flex items-center gap-1.5 rounded px-1 py-1 text-xs text-zinc-400">
-                  <Box size={12} className="text-zinc-500" />
-                  bracket.stl
-                </div>
-                <div className="flex items-center gap-1.5 rounded px-1 py-1 text-xs text-zinc-500 italic">
-                  <Box size={12} />
-                  Drop STL files here...
-                </div>
+                {modelLoaded ? (
+                  <div className="flex items-center gap-1.5 rounded bg-accent/10 px-1 py-1 text-xs text-accent">
+                    <Box size={12} />
+                    {modelName}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 rounded px-1 py-1 text-xs italic text-zinc-500">
+                    <Box size={12} />
+                    No model loaded
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -83,27 +107,42 @@ export function LeftPanel({ onCollapse }: { onCollapse: () => void }) {
             {materials.map((mat) => (
               <button
                 key={mat.id}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs text-zinc-300 transition-colors hover:bg-surface-3"
+                onClick={() => setSelectedId(mat.id)}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs transition-colors ${
+                  selectedId === mat.id
+                    ? "bg-surface-3 text-zinc-100"
+                    : "text-zinc-400 hover:bg-surface-3 hover:text-zinc-200"
+                }`}
               >
                 <div
                   className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: mat.color }}
+                  style={{ backgroundColor: mat.color_hex }}
                 />
-                {mat.name}
+                <span className="flex-1 text-left">{mat.name}</span>
+                {selectedId === mat.id && (
+                  <Check size={12} className="text-accent" />
+                )}
               </button>
             ))}
+            <div className="mt-3 rounded-lg border border-border bg-surface-2 p-2.5">
+              <p className="text-2xs font-medium text-zinc-400">Selected</p>
+              {(() => {
+                const sel = materials.find((m) => m.id === selectedId);
+                if (!sel) return null;
+                return (
+                  <div className="mt-1 space-y-0.5 text-2xs text-zinc-500">
+                    <p>E = {sel.youngs_modulus_gpa} GPa</p>
+                    <p>σy = {sel.yield_strength_mpa} MPa</p>
+                    <p>Elongation = {sel.elongation_at_break_pct}%</p>
+                    <p>Density = {sel.density_g_cm3} g/cm³</p>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
         )}
 
-        {activeTab === "scenarios" && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Layers size={24} className="mb-2 text-zinc-600" />
-            <p className="text-xs text-zinc-500">No saved scenarios</p>
-            <p className="mt-1 text-2xs text-zinc-600">
-              Apply forces and save to create scenarios
-            </p>
-          </div>
-        )}
+        {activeTab === "scenarios" && <ScenarioList />}
       </div>
     </div>
   );

@@ -1,98 +1,94 @@
-import { Box, PanelLeftOpen, PanelRightOpen } from "lucide-react";
+import { Box, PanelLeftOpen, PanelRightOpen, Upload } from "lucide-react";
 
-interface ViewportPanelProps {
-  leftCollapsed: boolean;
-  rightCollapsed: boolean;
-  onToggleLeft: () => void;
-  onToggleRight: () => void;
-}
+import { useWorkspaceStore, type ViewMode } from "@/stores/useWorkspaceStore";
+import { useModelStore } from "@/stores/useModelStore";
+import { SceneCanvas } from "@/components/viewport/SceneCanvas";
 
-export function ViewportPanel({
-  leftCollapsed,
-  rightCollapsed,
-  onToggleLeft,
-  onToggleRight,
-}: ViewportPanelProps) {
+const viewModeLabels: Record<ViewMode, string> = {
+  shaded: "Shaded",
+  wireframe: "Wireframe",
+  xray: "X-Ray",
+  stress: "Stress",
+};
+
+export function ViewportPanel() {
+  const loaded = useModelStore((s) => s.loaded);
+  const loadSample = useModelStore((s) => s.loadSample);
+  const leftOpen = useWorkspaceStore((s) => s.leftPanelOpen);
+  const rightOpen = useWorkspaceStore((s) => s.rightPanelOpen);
+  const toggleLeft = useWorkspaceStore((s) => s.toggleLeftPanel);
+  const toggleRight = useWorkspaceStore((s) => s.toggleRightPanel);
+  const viewMode = useWorkspaceStore((s) => s.viewMode);
+  const setViewMode = useWorkspaceStore((s) => s.setViewMode);
+
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-surface-0">
-      {/* Grid background */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: [
-            "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px)",
-            "linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
-          ].join(", "),
-          backgroundSize: "40px 40px",
-        }}
-      />
+    <div className="relative h-full w-full overflow-hidden">
+      {/* R3F Canvas -- always mounted for smooth transitions */}
+      <SceneCanvas />
 
-      {/* Subtle center cross */}
-      <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-zinc-800/30" />
-      <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-zinc-800/30" />
-
-      {/* Axes indicator (bottom-left) */}
-      <div className="absolute bottom-4 left-4 flex items-end gap-0.5">
-        <div className="flex flex-col items-center">
-          <div className="h-8 w-0.5 bg-emerald-500" />
-          <span className="mt-0.5 text-2xs font-medium text-emerald-500">Y</span>
-        </div>
-        <div className="mb-3 flex items-center">
-          <div className="h-0.5 w-8 bg-red-500" />
-          <span className="ml-0.5 text-2xs font-medium text-red-500">X</span>
-        </div>
-      </div>
-
-      {/* Placeholder content */}
-      <div className="relative z-10 flex flex-col items-center gap-3 text-center">
-        <div className="rounded-2xl border border-border bg-surface-1/80 p-8 backdrop-blur-sm">
-          <Box size={48} className="mx-auto mb-4 text-zinc-600" strokeWidth={1} />
-          <p className="text-sm font-medium text-zinc-400">3D Viewport</p>
-          <p className="mt-1 max-w-xs text-xs text-zinc-600">
-            React Three Fiber viewport will render here in Phase 2.
-            Upload an STL or load a sample model to begin.
-          </p>
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <button className="rounded-md border border-border bg-surface-3 px-3 py-1.5 text-xs text-zinc-300 transition-colors hover:bg-surface-4 hover:text-zinc-100">
-              Load Sample
-            </button>
-            <button className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover">
-              Upload STL
-            </button>
+      {/* Empty state overlay */}
+      {!loaded && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-auto rounded-2xl border border-border bg-surface-1/90 p-8 backdrop-blur-sm">
+            <Box size={48} className="mx-auto mb-4 text-zinc-600" strokeWidth={1} />
+            <p className="text-center text-sm font-medium text-zinc-400">
+              3D Viewport
+            </p>
+            <p className="mx-auto mt-1 max-w-xs text-center text-xs text-zinc-600">
+              Load a sample model to explore the workspace, or upload your own
+              STL file.
+            </p>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <button
+                onClick={loadSample}
+                className="rounded-md bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+              >
+                Load Sample Bracket
+              </button>
+              <button
+                className="flex items-center gap-1.5 rounded-md border border-border bg-surface-3 px-3 py-2 text-xs text-zinc-400 opacity-50"
+                disabled
+                title="File upload coming in Phase 3"
+              >
+                <Upload size={13} />
+                Upload STL
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Panel toggle buttons */}
-      {leftCollapsed && (
+      {!leftOpen && (
         <button
-          onClick={onToggleLeft}
-          className="absolute left-2 top-2 rounded-md border border-border bg-surface-1/80 p-1.5 text-zinc-500 backdrop-blur-sm transition-colors hover:bg-surface-3 hover:text-zinc-300"
+          onClick={toggleLeft}
+          className="absolute left-2 top-2 z-10 rounded-md border border-border bg-surface-1/80 p-1.5 text-zinc-500 backdrop-blur-sm transition-colors hover:bg-surface-3 hover:text-zinc-300"
         >
           <PanelLeftOpen size={14} />
         </button>
       )}
-      {rightCollapsed && (
+      {!rightOpen && (
         <button
-          onClick={onToggleRight}
-          className="absolute right-2 top-2 rounded-md border border-border bg-surface-1/80 p-1.5 text-zinc-500 backdrop-blur-sm transition-colors hover:bg-surface-3 hover:text-zinc-300"
+          onClick={toggleRight}
+          className="absolute right-2 top-2 z-10 rounded-md border border-border bg-surface-1/80 p-1.5 text-zinc-500 backdrop-blur-sm transition-colors hover:bg-surface-3 hover:text-zinc-300"
         >
           <PanelRightOpen size={14} />
         </button>
       )}
 
-      {/* View mode indicator */}
-      <div className="absolute right-3 bottom-3 flex gap-1">
-        {["Shaded", "Wireframe", "Stress"].map((mode, i) => (
+      {/* View mode switcher */}
+      <div className="absolute right-3 bottom-3 z-10 flex gap-1">
+        {(["shaded", "wireframe", "xray", "stress"] as const).map((mode) => (
           <button
             key={mode}
+            onClick={() => setViewMode(mode)}
             className={`rounded px-2 py-0.5 text-2xs transition-colors ${
-              i === 0
-                ? "bg-surface-3 text-zinc-300"
+              viewMode === mode
+                ? "bg-surface-3 text-zinc-200"
                 : "text-zinc-600 hover:text-zinc-400"
             }`}
           >
-            {mode}
+            {viewModeLabels[mode]}
           </button>
         ))}
       </div>
