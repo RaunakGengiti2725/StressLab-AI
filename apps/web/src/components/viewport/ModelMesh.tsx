@@ -49,11 +49,21 @@ export function ModelMesh() {
   const lastMaterialId = useRef<string>("");
   const lastToolRef = useRef<string>("");
   const autoSwitched = useRef(false);
+  const prevMaterialId = useRef(material.id);
 
   const geometry = useMemo(() => {
     if (source === "sample-bracket") return createSampleBracket();
     return null;
   }, [source]);
+
+  useEffect(() => {
+    if (material.id !== prevMaterialId.current) {
+      prevMaterialId.current = material.id;
+      autoSwitched.current = false;
+      lastForceDelta.current = "";
+      lastMaterialId.current = "";
+    }
+  }, [material.id]);
 
   useEffect(() => {
     if (!geometry) return;

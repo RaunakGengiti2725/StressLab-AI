@@ -36,7 +36,6 @@ export function ScenarioList() {
   const [editName, setEditName] = useState("");
   const [compareMode, setCompareMode] = useState(false);
 
-  const setSelectedMaterial = useMaterialStore((s) => s.setSelectedId);
   const setActiveTool = useWorkspaceStore((s) => s.setActiveTool);
   const loadSample = useModelStore((s) => s.loadSample);
   const modelSource = useModelStore((s) => s.source);
@@ -49,20 +48,38 @@ export function ScenarioList() {
       loadSample();
     }
 
-    setSelectedMaterial(sc.materialId);
+    useMaterialStore.getState().setSelectedId(sc.materialId);
 
     if (sc.testMode) {
       setActiveTool(sc.testMode as ToolId);
+    } else {
+      setActiveTool("select");
     }
 
-    const store = simStore.getState();
-    if (sc.anchorRegionId !== null) {
-      store.setAnchorRegion(sc.anchorRegionId);
+    const restoreSimState = () => {
+      const store = simStore.getState();
+      if (store.regions.length === 0) return;
+
+      if (
+        sc.anchorRegionId !== null &&
+        sc.anchorRegionId < store.regions.length
+      ) {
+        store.setAnchorRegion(sc.anchorRegionId);
+      }
+      if (
+        sc.forceRegionId !== null &&
+        sc.forceRegionId < store.regions.length
+      ) {
+        store.setForceRegion(sc.forceRegionId);
+      }
+      store.updateForceDelta(sc.forceDelta);
+    };
+
+    if (simStore.getState().regions.length > 0) {
+      restoreSimState();
+    } else {
+      setTimeout(restoreSimState, 200);
     }
-    if (sc.forceRegionId !== null) {
-      store.setForceRegion(sc.forceRegionId);
-    }
-    store.updateForceDelta(sc.forceDelta);
 
     if (sc.analysis) {
       setAnalysis(sc.analysis);

@@ -1,4 +1,4 @@
-import { Box, PanelLeftOpen, PanelRightOpen, Upload } from "lucide-react";
+import { Box, PanelLeftOpen, PanelRightOpen, Upload, Play } from "lucide-react";
 
 import { useWorkspaceStore, type ViewMode } from "@/stores/useWorkspaceStore";
 import { useModelStore } from "@/stores/useModelStore";
@@ -31,27 +31,28 @@ export function ViewportPanel() {
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="pointer-events-auto rounded-2xl border border-border bg-surface-1/90 p-8 backdrop-blur-sm">
             <Box size={48} className="mx-auto mb-4 text-zinc-600" strokeWidth={1} />
-            <p className="text-center text-sm font-medium text-zinc-400">
-              3D Viewport
+            <p className="text-center text-sm font-medium text-zinc-200">
+              StressLab AI Workspace
             </p>
-            <p className="mx-auto mt-1 max-w-xs text-center text-xs text-zinc-600">
-              Load a sample model to explore the workspace, or upload your own
-              STL file.
+            <p className="mx-auto mt-1 max-w-xs text-center text-xs text-zinc-500">
+              Interactive pre-print stress analysis for 3D printed parts.
+              Load a model to get started.
             </p>
-            <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="mt-5 flex flex-col items-center gap-2">
               <button
                 onClick={loadSample}
-                className="rounded-md bg-accent px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
               >
+                <Play size={14} />
                 Load Sample Bracket
               </button>
               <button
-                className="flex items-center gap-1.5 rounded-md border border-border bg-surface-3 px-3 py-2 text-xs text-zinc-400 opacity-50"
+                className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-surface-3 px-3 py-2 text-xs text-zinc-500"
                 disabled
-                title="File upload coming in Phase 3"
+                title="STL file upload — coming soon"
               >
                 <Upload size={13} />
-                Upload STL
+                Upload STL (coming soon)
               </button>
             </div>
           </div>

@@ -13,6 +13,7 @@ import {
 import { useMaterialStore } from "@/stores/useMaterialStore";
 import { useModelStore } from "@/stores/useModelStore";
 import { useScenarioStore } from "@/stores/useScenarioStore";
+import { useAgentStore } from "@/stores/useAgentStore";
 import { ScenarioList } from "@/components/scenarios/ScenarioList";
 
 type Tab = "project" | "materials" | "scenarios";
@@ -28,7 +29,18 @@ export function LeftPanel({ onCollapse }: { onCollapse: () => void }) {
 
   const materials = useMaterialStore((s) => s.materials);
   const selectedId = useMaterialStore((s) => s.selectedId);
-  const setSelectedId = useMaterialStore((s) => s.setSelectedId);
+  const rawSetSelectedId = useMaterialStore((s) => s.setSelectedId);
+  const clearComparison = useScenarioStore((s) => s.setComparisonResult);
+  const clearReport = useScenarioStore((s) => s.setReport);
+  const clearAnalysis = useAgentStore((s) => s.clearAnalysis);
+
+  const setSelectedId = (id: string) => {
+    if (id === selectedId) return;
+    rawSetSelectedId(id);
+    clearComparison(null);
+    clearReport(null);
+    clearAnalysis();
+  };
 
   const modelLoaded = useModelStore((s) => s.loaded);
   const modelName = useModelStore((s) => s.name);

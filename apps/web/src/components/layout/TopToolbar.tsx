@@ -108,6 +108,7 @@ export function TopToolbar() {
   const material = useMaterialStore(getSelectedMaterial);
 
   const agentIsRunning = useAgentStore((s) => s.isRunning);
+  const clearAnalysis = useAgentStore((s) => s.clearAnalysis);
   const setAnalysis = useAgentStore((s) => s.setAnalysis);
   const setRunning = useAgentStore((s) => s.setRunning);
 
@@ -120,6 +121,14 @@ export function TopToolbar() {
   const modelName = useModelStore((s) => s.name);
 
   const hasSimState = isDeformed || anchorRegionId !== null;
+
+  const handleReset = useCallback(() => {
+    resetSimulation();
+    clearAnalysis();
+    setComparisonResult(null);
+    setReport(null);
+    useWorkspaceStore.getState().setActiveTool("select");
+  }, [resetSimulation, clearAnalysis, setComparisonResult, setReport]);
 
   const buildCurrentInput = useCallback(() => {
     return buildAgentInput({
@@ -188,6 +197,12 @@ export function TopToolbar() {
     setReport,
     setReportOpen,
   ]);
+
+  const handleLoadDemo = useCallback(() => {
+    if (!modelLoaded) loadSample();
+    useMaterialStore.getState().setSelectedId("pla");
+    useWorkspaceStore.getState().setActiveTool("bend");
+  }, [modelLoaded, loadSample]);
 
   const handleAnalyze = useCallback(() => {
     setRunning(true);
@@ -269,7 +284,7 @@ export function TopToolbar() {
 
       <button
         title="Reset Simulation"
-        onClick={resetSimulation}
+        onClick={handleReset}
         disabled={!hasSimState}
         className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-zinc-400 transition-colors hover:bg-surface-3 hover:text-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-700"
       >
@@ -369,12 +384,26 @@ export function TopToolbar() {
         <span className="hidden xl:inline">Load Sample</span>
       </button>
 
+      {!modelLoaded && (
+        <>
+          <div className="mx-1 h-5 w-px bg-border" />
+          <button
+            title="Quick demo: load model + PLA + Bend tool"
+            onClick={handleLoadDemo}
+            className="flex items-center gap-1.5 rounded-md bg-emerald-500/15 px-2.5 py-1.5 text-xs font-medium text-emerald-400 transition-colors hover:bg-emerald-500/25"
+          >
+            <Zap size={15} />
+            <span>Quick Demo</span>
+          </button>
+        </>
+      )}
+
       <div className="flex-1" />
 
       <div className="flex items-center gap-2 text-2xs text-zinc-500">
         {modelLoaded && (
           <span className="rounded bg-accent/10 px-1.5 py-0.5 font-mono text-accent">
-            Model loaded
+            {modelName || "Model loaded"}
           </span>
         )}
         {isDeformed && (
@@ -382,8 +411,8 @@ export function TopToolbar() {
             Simulation active
           </span>
         )}
-        <span className="rounded bg-surface-3 px-1.5 py-0.5 font-mono">
-          Phase 5
+        <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 font-mono text-emerald-400">
+          Demo Ready
         </span>
       </div>
     </header>
