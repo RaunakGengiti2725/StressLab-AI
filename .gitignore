@@ -58,3 +58,9 @@ backend/uploads/
 
 # Docker 数据
 data/
+
+# ─── StressLab AI ───────────────────────────
+apps/api/.env
+apps/web/dist/
+apps/api/*.egg-info/
+apps/api/data/scenarios/

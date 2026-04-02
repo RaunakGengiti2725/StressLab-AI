@@ -192,6 +192,45 @@ MiroFish团队长期招募全职/实习，如果你对多Agent应用感兴趣，
 
 MiroFish 的仿真引擎由 **[OASIS](https://github.com/camel-ai/oasis)** 驱动，我们衷心感谢 CAMEL-AI 团队的开源贡献！
 
+---
+
+## StressLab AI
+
+**AI-assisted pre-print validation workspace for 3D printed parts**, built on top of this MiroFish fork.
+
+StressLab AI lives in `apps/` and `packages/`, separate from the MiroFish core.
+
+### Quick Start (StressLab)
+
+```bash
+# Prerequisites: Node.js >= 18, Python >= 3.11
+
+# Install
+cp apps/api/.env.example apps/api/.env
+make setup
+
+# Run
+make dev
+# Web:  http://localhost:5173
+# API:  http://localhost:8000
+# Docs: http://localhost:8000/docs
+```
+
+### Structure
+
+| Directory          | Purpose                          |
+|--------------------|----------------------------------|
+| `apps/web/`        | React + TypeScript frontend      |
+| `apps/api/`        | FastAPI backend                  |
+| `packages/shared/` | TypeScript type contracts        |
+| `docs/`            | Architecture and progress docs   |
+| `frontend/`        | MiroFish original (untouched)    |
+| `backend/`         | MiroFish original (untouched)    |
+
+See [docs/architecture.md](docs/architecture.md) and [docs/setup.md](docs/setup.md) for details.
+
+---
+
 ## 📈 项目统计
 
 <a href="https://www.star-history.com/#666ghj/MiroFish&type=date&legend=top-left">
